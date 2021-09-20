@@ -1,0 +1,106 @@
+openapi: "3.0.0"
+
+info:
+  description: "This is the API for Rincewind"
+  version: "0.0.1"
+  title: "Rincewind API"
+  license:
+    name: "MIT"
+    url: "https://github.com/kekscode/rincewind/blob/main/LICENSE"
+
+servers:
+  - url: "/"
+    variables:
+      basePath:
+        default: "/v1"
+
+paths:
+  /sessions:
+    get:
+      tags:
+        - "session"
+      summary: "List all sessions"
+      description: "List all running sessions"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+
+  /sessions/{uuid}/slices/active:
+    get:
+      tags:
+        - "slice"
+      summary: "List information about the currently active time slice in a session"
+      description: "An active slice is running right now and it's data may change continously"
+      parameters:
+        - name: "uuid"
+          in: "path"
+          description: "Session ID"
+          required: true
+          schema:
+            $ref: '#/components/schemas/Session'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Slices'
+
+  /sessions/{uuid}/slices/elapsed:
+    get:
+      tags:
+        - "slice"
+      summary: "List information about elapsed time slices in a session"
+      description: "Elapsed time slices represent historic data"
+      parameters:
+        - name: "uuid"
+          in: "path"
+          description: "Session ID"
+          required: true
+          schema:
+            $ref: '#/components/schemas/Session'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Slices'
+
+components:
+  schemas:
+    Session:
+      type: object
+      properties:
+        uuid:
+          description: The session ID
+          type: "string"
+          format: "uuid"
+    Slice:
+      type: object
+      properties:
+        uuid:
+          type: "string"
+          format: "uuid"
+        label:
+          type: "string"
+        start:
+          type: "string"
+          format: date-time
+        end:
+          type: "string"
+          format: date-time
+        elapsed:
+          type:  "string"
+          format: date-time
+    Slices:
+      type: object
+      properties:
+        slice:
+          description: Time slices
+          type: array
+          items: '#/components/schemas/Slice'
