@@ -21,10 +21,20 @@ func (ts *TimeSlice) Start() {
 	ts.End = ts.Begin.Add(ts.Duration)
 }
 
-func (ts *TimeSlice) TimeLeft() time.Time {
-	return time.Now()
+func (ts *TimeSlice) TimeLeft() time.Duration {
+	if ts.Expired() {
+		return time.Duration(0)
+	}
+	return time.Until(ts.End)
+}
+
+func (ts *TimeSlice) TimeElapsed() time.Duration {
+	if ts.Expired() {
+		return ts.Duration
+	}
+	return time.Since(ts.Begin)
 }
 
 func (ts *TimeSlice) Expired() bool {
-	return true
+	return time.Now().After(ts.End)
 }
