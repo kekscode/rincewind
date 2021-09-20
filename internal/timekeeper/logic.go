@@ -19,5 +19,12 @@ func New(label string, duration time.Duration) *TimeSlice {
 func (ts *TimeSlice) Start() {
 	ts.Begin = time.Now()
 	ts.End = ts.Begin.Add(ts.Duration)
+}
 
+func (ts *TimeSlice) TimeLeft() time.Time {
+	return time.Now()
+}
+
+func (ts *TimeSlice) Expired() bool {
+	return true
 }
