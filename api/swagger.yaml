@@ -80,6 +80,13 @@ components:
           description: The session ID
           type: "string"
           format: "uuid"
+
+    Slices:
+      type: array
+      description: Time slices
+      items:
+        $ref: '#/components/schemas/Slice'
+
     Slice:
       type: object
       properties:
@@ -97,10 +104,3 @@ components:
         elapsed:
           type:  "string"
           format: date-time
-    Slices:
-      type: object
-      properties:
-        slice:
-          description: Time slices
-          type: array
-          items: '#/components/schemas/Slice'
