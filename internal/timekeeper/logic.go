@@ -1,6 +1,15 @@
 package timekeeper
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type Session struct {
+	ID     uuid.UUID
+	Slices []TimeSlice
+}
 
 type TimeSlice struct {
 	Label    string
