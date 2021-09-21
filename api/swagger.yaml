@@ -28,6 +28,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
+    post:
+      tags:
+        - "session"
+      summary: "Start a new session"
+      description: "Starts a session on the server"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+
+  /sessions/{uuid}:
+    get:
+      tags:
+        - "session"
+      summary: "Get session data"
+      description: "Get data about a specific session"
+      parameters:
+        - name: "uuid"
+          in: "path"
+          description: "Session ID"
+          required: true
+          schema:
+            $ref: '#/components/schemas/Session'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+    delete:
+      tags:
+        - "session"
+      summary: "Delete a session"
+      description: "Deletes a specific session on the server"
+      parameters:
+        - name: "uuid"
+          in: "path"
+          description: "Session ID"
+          required: true
+          schema:
+            $ref: '#/components/schemas/Session'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
 
   /sessions/{uuid}/slices/active:
     get:
@@ -46,7 +98,7 @@ paths:
         "200":
           description: OK
           content:
-            application/json: 
+            application/json:
               schema:
                 $ref: '#/components/schemas/Slices'
 
@@ -67,7 +119,7 @@ paths:
         "200":
           description: OK
           content:
-            application/json: 
+            application/json:
               schema:
                 $ref: '#/components/schemas/Slices'
 
