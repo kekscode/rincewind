@@ -116,6 +116,15 @@ type ClientInterface interface {
 	// GetSessions request
 	GetSessions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PostSessions request
+	PostSessions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteSessionsUuid request
+	DeleteSessionsUuid(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSessionsUuid request
+	GetSessionsUuid(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSessionsUuidSlicesActive request
 	GetSessionsUuidSlicesActive(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -125,6 +134,42 @@ type ClientInterface interface {
 
 func (c *Client) GetSessions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSessionsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostSessions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostSessionsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSessionsUuid(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteSessionsUuidRequest(c.Server, uuid)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSessionsUuid(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSessionsUuidRequest(c.Server, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -169,6 +214,101 @@ func NewGetSessionsRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/sessions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostSessionsRequest generates requests for PostSessions
+func NewPostSessionsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/sessions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteSessionsUuidRequest generates requests for DeleteSessionsUuid
+func NewDeleteSessionsUuidRequest(server string, uuid Session) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "uuid", runtime.ParamLocationPath, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/sessions/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSessionsUuidRequest generates requests for GetSessionsUuid
+func NewGetSessionsUuidRequest(server string, uuid Session) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "uuid", runtime.ParamLocationPath, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/sessions/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -300,6 +440,15 @@ type ClientWithResponsesInterface interface {
 	// GetSessions request
 	GetSessionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetSessionsResponse, error)
 
+	// PostSessions request
+	PostSessionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostSessionsResponse, error)
+
+	// DeleteSessionsUuid request
+	DeleteSessionsUuidWithResponse(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*DeleteSessionsUuidResponse, error)
+
+	// GetSessionsUuid request
+	GetSessionsUuidWithResponse(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*GetSessionsUuidResponse, error)
+
 	// GetSessionsUuidSlicesActive request
 	GetSessionsUuidSlicesActiveWithResponse(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*GetSessionsUuidSlicesActiveResponse, error)
 
@@ -323,6 +472,72 @@ func (r GetSessionsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSessionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostSessionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Session
+}
+
+// Status returns HTTPResponse.Status
+func (r PostSessionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostSessionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteSessionsUuidResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Session
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSessionsUuidResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSessionsUuidResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSessionsUuidResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Session
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSessionsUuidResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSessionsUuidResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -382,6 +597,33 @@ func (c *ClientWithResponses) GetSessionsWithResponse(ctx context.Context, reqEd
 	return ParseGetSessionsResponse(rsp)
 }
 
+// PostSessionsWithResponse request returning *PostSessionsResponse
+func (c *ClientWithResponses) PostSessionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostSessionsResponse, error) {
+	rsp, err := c.PostSessions(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostSessionsResponse(rsp)
+}
+
+// DeleteSessionsUuidWithResponse request returning *DeleteSessionsUuidResponse
+func (c *ClientWithResponses) DeleteSessionsUuidWithResponse(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*DeleteSessionsUuidResponse, error) {
+	rsp, err := c.DeleteSessionsUuid(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSessionsUuidResponse(rsp)
+}
+
+// GetSessionsUuidWithResponse request returning *GetSessionsUuidResponse
+func (c *ClientWithResponses) GetSessionsUuidWithResponse(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*GetSessionsUuidResponse, error) {
+	rsp, err := c.GetSessionsUuid(ctx, uuid, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSessionsUuidResponse(rsp)
+}
+
 // GetSessionsUuidSlicesActiveWithResponse request returning *GetSessionsUuidSlicesActiveResponse
 func (c *ClientWithResponses) GetSessionsUuidSlicesActiveWithResponse(ctx context.Context, uuid Session, reqEditors ...RequestEditorFn) (*GetSessionsUuidSlicesActiveResponse, error) {
 	rsp, err := c.GetSessionsUuidSlicesActive(ctx, uuid, reqEditors...)
@@ -409,6 +651,84 @@ func ParseGetSessionsResponse(rsp *http.Response) (*GetSessionsResponse, error) 
 	}
 
 	response := &GetSessionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Session
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostSessionsResponse parses an HTTP response from a PostSessionsWithResponse call
+func ParsePostSessionsResponse(rsp *http.Response) (*PostSessionsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostSessionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Session
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSessionsUuidResponse parses an HTTP response from a DeleteSessionsUuidWithResponse call
+func ParseDeleteSessionsUuidResponse(rsp *http.Response) (*DeleteSessionsUuidResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSessionsUuidResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Session
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSessionsUuidResponse parses an HTTP response from a GetSessionsUuidWithResponse call
+func ParseGetSessionsUuidResponse(rsp *http.Response) (*GetSessionsUuidResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSessionsUuidResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -483,6 +803,15 @@ type ServerInterface interface {
 	// List all sessions
 	// (GET /sessions)
 	GetSessions(ctx echo.Context) error
+	// Start a new session
+	// (POST /sessions)
+	PostSessions(ctx echo.Context) error
+	// Delete a session
+	// (DELETE /sessions/{uuid})
+	DeleteSessionsUuid(ctx echo.Context, uuid Session) error
+	// Get session data
+	// (GET /sessions/{uuid})
+	GetSessionsUuid(ctx echo.Context, uuid Session) error
 	// List information about the currently active time slice in a session
 	// (GET /sessions/{uuid}/slices/active)
 	GetSessionsUuidSlicesActive(ctx echo.Context, uuid Session) error
@@ -502,6 +831,47 @@ func (w *ServerInterfaceWrapper) GetSessions(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetSessions(ctx)
+	return err
+}
+
+// PostSessions converts echo context to params.
+func (w *ServerInterfaceWrapper) PostSessions(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostSessions(ctx)
+	return err
+}
+
+// DeleteSessionsUuid converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteSessionsUuid(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "uuid" -------------
+	var uuid Session
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "uuid", runtime.ParamLocationPath, ctx.Param("uuid"), &uuid)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter uuid: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.DeleteSessionsUuid(ctx, uuid)
+	return err
+}
+
+// GetSessionsUuid converts echo context to params.
+func (w *ServerInterfaceWrapper) GetSessionsUuid(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "uuid" -------------
+	var uuid Session
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "uuid", runtime.ParamLocationPath, ctx.Param("uuid"), &uuid)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter uuid: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetSessionsUuid(ctx, uuid)
 	return err
 }
 
@@ -566,6 +936,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/sessions", wrapper.GetSessions)
+	router.POST(baseURL+"/sessions", wrapper.PostSessions)
+	router.DELETE(baseURL+"/sessions/:uuid", wrapper.DeleteSessionsUuid)
+	router.GET(baseURL+"/sessions/:uuid", wrapper.GetSessionsUuid)
 	router.GET(baseURL+"/sessions/:uuid/slices/active", wrapper.GetSessionsUuidSlicesActive)
 	router.GET(baseURL+"/sessions/:uuid/slices/elapsed", wrapper.GetSessionsUuidSlicesElapsed)
 
@@ -574,18 +947,19 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xVwW7bRhD9lcW0QC+sVm5vvBmtUQh1GyNyToEPQ3Ikjk3uMrNDGYKhfw92V5KVSLHl",
-	"ALnlRIo7+2bmvTejJ6h9P3hHTgOUTxDqlnpMr3MKgb2Lr4P4gUSZ0sE4chOfDYVaeNAUBLctmZCvmNnf",
-	"UMDCS48KZY4vQNcDQQlBhd0SNpv9F1/dU62wKWDecU3HCanDIVDKuQdtUOl35Z6OkQsg94bgDivqYvjR",
-	"SVAUPR9ox8v3Nh5OkMo9mZAPC2ClPgX9KrSAEn6xz+LZrXI2c/icBEVwDZuYlt3CnxKOg+FgtCVzeTMz",
-	"Cy/mPbuaHtnF8iOeC0kWh32E/G92CwWM0kEJreoQSmuXrO1YTWrf2wd6CLVvyMoOxVadr2yP7Oz17K+r",
-	"/+dXqUDWLsLtk8X0UMCKJBsPppPp5CKG+oEcDgwl/DmZTqZQwIDaJi7s1nTpx5L0uMFrDmqw64yMzrFb",
-	"mv2NBCwY42YNlPAP6fz5TCgM3oWsyx/TaXzU3im5lASHoeM6Xbb3IQ9KFuFVibaTlUT5stZ3/yaDhLHv",
-	"UdaHxR8UrbgMUH6E7Se4i1f2PNin6LuNzbaxWCuv6JvkXDqTI7LNohF2NAkvWzXOPxp0jWH9LZgGFU2P",
-	"a1O36JZkIh3s/Bi69Utkfhi5yRa/zNVE/QR7UpLYyddFzQ/3CMcvUW4odgbcDpbQp5ElLgaVkYo3s3/3",
-	"IzXOQ3u2xHE249qIbWPlR03zWI8i5LRb70TS/UIw7AzuXHFoijT/L1riYJ+e9MRVPj9IFozQIBTIqWk5",
-	"qBeukxnOU30L+FP2M2SnE+S/JnXEJVntWM2b2cZVisJYdbnPCgPdREKT4Ascu/gnZVcXsdy7zecAAAD/",
-	"/4989NALCAAA",
+	"H4sIAAAAAAAC/+xWTY8jNRD9K1aBxKWJM3Dr22h3tIpYYESWE5pDxamka7fbNnZ1RtEo/x3ZTieB7p3J",
+	"ckBIO6d07HJ9vPfK5ScwrvPOkpUI9RNE01CH+XNJMbKz6dMH5ykIU97oe16n3zVFE9hLNoIPDalYjqjF",
+	"W6hg40KHAnWxr0D2nqCGKIHtFg6H04pbfSQjcKhg2bKhcUBq0UfKMU9O1yj0vXBHY88VkP0C4xZX1Cbz",
+	"0U4UDHK9owGXf1t4nACVO1KxbFbAQl02+jbQBmr4Rp/J00fmdMHwHARDwD0cUli2GzdFHEfFUUlD6vZ+",
+	"oTYuqN/YGnpkm9JP/mzMtFjsksufFx+ggj60UEMj4mOt9Zal6Vcz4zr9iT5F49akw+BFr1q30h2y1e8X",
+	"b+5+Wd7lBFna5O4ULIWHCnYUivBgPpvPbpKp82TRM9Tw42w+m0MFHqXJWOij6PKfLcm4wPccRWHbqtBb",
+	"y3arTiey44DJbrGGGt6RLM97gaJ3NhZefpjP049xVsjmIOh9yyYf1h9jaZRCwosUHTsrk/L3XH/9KQsk",
+	"9l2HYX+Z/EXSgtsI9R9wXIKHQwXexYnSl0nBUeGpM53NPEcKOwqj+u9dfAaAm/8CgDeBUGj9DxRyHQqV",
+	"pcehlEkcDtVZD/op9d+hgNKS0Biet3k94+PJ8IbNlUCVgwNUv5c+9xiwI6GQkhoxcXk1clpJCoZq6Knj",
+	"XRHoz55Duusk9FR9MZ4P/xPZFoDOwvuMaif79R2JWqOgwpXrZYKc5/r2lYsRFwnPQdYJ12s7R5fBo9EI",
+	"7+iz1+utVcWiDKo0SoaLNvC2EWXdo0K7VizfxUJsh3tlGrRbUgkNtq6P7f4lWsuQvC3ZfAUUl7F/9ZBI",
+	"0z09PFLZpXPSBWb6EMhKux9IktOTQrGdbtD8gnhWEhcvsklN3JX9i2BRBfKBIllRDUdxgc2gxitYPzp8",
+	"pf0K2mkC/JeoTn7zqCuolredTo8xDIyrttS5wkj3CdBM+Ab7Nj1z9e4mpftw+CsAAP//oC/K7U0MAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
